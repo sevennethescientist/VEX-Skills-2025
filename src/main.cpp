@@ -21,6 +21,13 @@ competition Competition;
 //&& BRAIN CONSTANT ---------------------------------------------
 brain Brain;
 
+// && SENSOR CONSTANTS -----------------------------------------
+//TODO to be configured
+
+// && SMART PORT CONSTANTS
+//TODO CONFIGURE
+digital_out moboClampPiston = digital_out(Brain.ThreeWirePort.A);
+
 
 //&& CONTROLLER CONSTANTS ----------------------------------------
 controller DRIVER = controller(primary);
@@ -30,14 +37,18 @@ int Channel1;
 int Channel2;
 int threshold;
 
-
-//&& MOTOR CONSTANTS ---------------------------------------------
+//&& DRIVE MOTOR CONSTANTS ---------------------------------------------
 // ** Parameters: port, ratio, reversed boolean
 //TODO update ports, update which side should be inversed
 motor frontLeftDriveMotor = motor(PORT1, ratio18_1, false);
 motor frontRightDriveMotor = motor(PORT1, ratio18_1, true);
 motor backLeftDriveMotor = motor(PORT1, ratio18_1, false);
 motor backRightDriveMotor = motor(PORT1, ratio18_1, true);
+
+// && SCORING MOTOR CONSTANTS 
+motor conveyorMotor = motor(PORT1, ratio18_1, false);
+motor intakeMotor = motor(PORT1, ratio18_1, false);
+
 
 //babababba
 
@@ -55,6 +66,9 @@ void pre_auton(void) {
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
+
+  //RESETS THE CLAMP 
+  moboClampPiston.set(false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -103,9 +117,6 @@ void usercontrol(void) {
     int rightSpeed = DRIVER.Axis2.position();
 
     // TODO Deadband Implementation
-
-
-
     // ^ SET MOTORSPEEDS 
     //TODO SEE IF NEEDS CHANGE
     frontLeftDriveMotor.spin(forward, leftSpeed, percent);
@@ -114,6 +125,18 @@ void usercontrol(void) {
     backLeftDriveMotor.spin(forward, leftSpeed, percent);
     backRightDriveMotor.spin(forward, rightSpeed, percent);
 
+    // ** OPERATOR BINDINGS --------------------------------------------------------------
+    if (OPERATOR.ButtonL1.pressing()) { //conveyor belt
+      conveyorMotor.spin(forward, 50, percent);
+    } else {
+      conveyorMotor.stop();
+    }
+
+    if (OPERATOR.ButtonL2.pressing()) { //piston
+      moboClampPiston.set(true);
+    } else {
+      moboClampPiston.set(true);
+    }
 
 
     wait(20, msec); // Sleep the task for a short amount of time to
