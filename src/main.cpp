@@ -40,14 +40,14 @@ int threshold;
 //&& DRIVE MOTOR CONSTANTS ---------------------------------------------
 // ** Parameters: port, ratio, reversed boolean
 //TODO update ports, update which side should be inversed
-motor frontLeftDriveMotor = motor(PORT1, ratio18_1, false);
-motor frontRightDriveMotor = motor(PORT1, ratio18_1, true);
-motor backLeftDriveMotor = motor(PORT1, ratio18_1, false);
-motor backRightDriveMotor = motor(PORT1, ratio18_1, true);
+// motor frontLeftDriveMotor = motor(PORT1, ratio18_1, false);
+// motor frontRightDriveMotor = motor(PORT1, ratio18_1, true);
+// motor backLeftDriveMotor = motor(PORT1, ratio18_1, false);
+// motor backRightDriveMotor = motor(PORT1, ratio18_1, true);
 
 // && SCORING MOTOR CONSTANTS 
 motor conveyorMotor = motor(PORT1, ratio18_1, false);
-motor intakeMotor = motor(PORT1, ratio18_1, false);
+motor intakeMotor = motor(PORT2, ratio18_1, false);
 
 
 //babababba
@@ -68,7 +68,7 @@ void pre_auton(void) {
   // Example: clearing encoders, setting servo positions, ...
 
   //RESETS THE CLAMP 
-  moboClampPiston.set(false);
+  moboClampPiston.set(true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -96,6 +96,20 @@ void autonomous(void) {
 /*                                                                           */
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
+void configureDriveBindings(){
+  if (DRIVER.ButtonL1.pressing()) { //conveyor belt
+    conveyorMotor.spin(forward, 50, percent);
+  } else {
+    conveyorMotor.stop();
+  }
+
+  if (DRIVER.ButtonL2.pressing()) { //piston
+    moboClampPiston.set(true);
+  } else {
+    moboClampPiston.set(false);
+  }
+
+}
 
 void usercontrol(void) {
   // User control code here, inside the loop
@@ -111,7 +125,7 @@ void usercontrol(void) {
     // update your motors, etc.
     // ........................................................................
 
-     // ** DRIVER BINDINGS -------------------------------------------------------------------
+    configureDriveBindings();
     //Sets sepeeds to inputs from driver contrller 
     int leftSpeed = DRIVER.Axis3.position();
     int rightSpeed = DRIVER.Axis2.position();
@@ -119,30 +133,22 @@ void usercontrol(void) {
     // TODO Deadband Implementation
     // ^ SET MOTORSPEEDS 
     //TODO SEE IF NEEDS CHANGE
-    frontLeftDriveMotor.spin(forward, leftSpeed, percent);
-    frontRightDriveMotor.spin(forward, leftSpeed, percent);
+    // frontLeftDriveMotor.spin(forward, leftSpeed, percent);
+    // frontRightDriveMotor.spin(forward, leftSpeed, percent);
 
-    backLeftDriveMotor.spin(forward, leftSpeed, percent);
-    backRightDriveMotor.spin(forward, rightSpeed, percent);
+    // backLeftDriveMotor.spin(forward, leftSpeed, percent);
+    // backRightDriveMotor.spin(forward, rightSpeed, percent);
 
-    // ** OPERATOR BINDINGS --------------------------------------------------------------
-    if (OPERATOR.ButtonL1.pressing()) { //conveyor belt
-      conveyorMotor.spin(forward, 50, percent);
-    } else {
-      conveyorMotor.stop();
-    }
-
-    if (OPERATOR.ButtonL2.pressing()) { //piston
-      moboClampPiston.set(true);
-    } else {
-      moboClampPiston.set(true);
-    }
+    
 
 
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
 }
+
+//todo for now put everything in here
+
 
 //
 // Main will set up the competition functions and callbacks.
