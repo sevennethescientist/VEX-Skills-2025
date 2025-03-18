@@ -23,6 +23,7 @@ brain Brain;
 
 // && SENSOR CONSTANTS -----------------------------------------
 //TODO to be configured
+inertial Inertial = inertial(PORT20);
 
 // && SMART PORT CONSTANTS
 //TODO CONFIGURE
@@ -40,17 +41,24 @@ int threshold;
 //&& DRIVE MOTOR CONSTANTS ---------------------------------------------
 // ** Parameters: port, ratio, reversed boolean
 //TODO update ports, update which side should be inversed
-// motor frontLeftDriveMotor = motor(PORT1, ratio18_1, false);
-// motor frontRightDriveMotor = motor(PORT1, ratio18_1, true);
-// motor backLeftDriveMotor = motor(PORT1, ratio18_1, false);
-// motor backRightDriveMotor = motor(PORT1, ratio18_1, true);
+motor frontLeftDriveMotor = motor(PORT3, ratio18_1, false);
+motor frontRightDriveMotor = motor(PORT4, ratio18_1, true);
+motor backLeftDriveMotor = motor(PORT5, ratio18_1, false);
+motor backRightDriveMotor = motor(PORT6, ratio18_1, true);
+
+motor_group leftMotorGroup = motor_group(frontLeftDriveMotor, backRightDriveMotor);
+motor_group rightMotorGroup = motor_group(frontLeftDriveMotor, backRightDriveMotor);
+
+//TODO VERIFY THESE VALUES
+smartdrive DriveTrain = smartdrive(leftMotorGroup, rightMotorGroup,
+                                  Inertial, 0, 0, 0, mm, 1);
+// view: https://api.vex.com/v5/home/cpp/SmartDrive.html#smartdrive
+
+//&& DRIVE ENCODER CONSTANTS
 
 // && SCORING MOTOR CONSTANTS 
-motor conveyorMotor = motor(PORT1, ratio18_1, false);
-motor intakeMotor = motor(PORT2, ratio18_1, false);
-
-
-//babababba
+motor conveyorMotor = motor(PORT11, ratio18_1, false);
+motor intakeMotor = motor(PORT12, ratio18_1, false);
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -61,41 +69,32 @@ motor intakeMotor = motor(PORT2, ratio18_1, false);
 /*  function is only called once after the V5 has been powered on and        */
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
-
 void pre_auton(void) {
+  //RESETS THE GYROSCOPE FOR THE SMART DRIVETRAIN
+  Inertial.resetHeading();
+  Inertial.resetRotation();
+  Inertial.calibrate();
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
 
   //RESETS THE CLAMP 
-  moboClampPiston.set(true);
+  moboClampPiston.set(false);
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              Autonomous Task                              */
-/*                                                                           */
-/*  This task is used to control your robot during the autonomous phase of   */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
+
 
 void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
+  //TO BE TESTED
+  DriveTrain.driveFor(forward, 6, inches);
+  //TODO VERIFY
+  //DriveTrain.turnToHeading();
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              User Control Task                            */
-/*                                                                           */
-/*  This task is used to control your robot during the user control phase of */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
+
 void configureDriveBindings(){
   if (DRIVER.ButtonL1.pressing()) { //conveyor belt
     conveyorMotor.spin(forward, 50, percent);
