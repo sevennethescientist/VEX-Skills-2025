@@ -19,6 +19,8 @@ competition Competition;
 // define your global instances of motors and other devices here
 
 //&& NUMERAL CONSTANTS 
+int CONVEYOR_MAX_SPEED = 100;
+int CONVEYOR_MIN_SPEED = 0;
 
 
 //&& BRAIN CONSTANT ---------------------------------------------
@@ -30,7 +32,8 @@ inertial Inertial = inertial(PORT20);
 
 // && SMART PORT CONSTANTS
 //TODO CONFIGURE
-digital_out moboClampPiston = digital_out(Brain.ThreeWirePort.A);
+digital_out leftMoboClampPiston = digital_out(Brain.ThreeWirePort.A);
+digital_out rightMoboClampPiston = digital_out(Brain.ThreeWirePort.A);
 
 
 //&& CONTROLLER CONSTANTS ----------------------------------------
@@ -83,7 +86,8 @@ void pre_auton(void) {
   // Example: clearing encoders, setting servo positions, ...
 
   //RESETS THE CLAMP 
-  moboClampPiston.set(false);
+  leftMoboClampPiston.set(false);
+  rightMoboClampPiston.set(false);
 }
 
 
@@ -100,6 +104,8 @@ void autonomous(void) {
 
 
 void configureDriveBindings(){
+
+  // * CONVEYOR CONTROL
   if (DRIVER.ButtonL1.pressing()) { //conveyor belt
     conveyorMotor.spin(reverse, 100, percent);
   } 
@@ -110,10 +116,13 @@ void configureDriveBindings(){
     conveyorMotor.stop();
   }
 
+  // * CLAMP CONTROL
   if (DRIVER.ButtonR1.pressing()) { //piston
-    moboClampPiston.set(true);
+    leftMoboClampPiston.set(true);
+    rightMoboClampPiston.set(true);
   } else {
-    moboClampPiston.set(false);
+    leftMoboClampPiston.set(false);
+    rightMoboClampPiston.set(false);
   }
 
 }
