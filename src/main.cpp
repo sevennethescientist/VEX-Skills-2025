@@ -18,6 +18,9 @@ competition Competition;
 
 // define your global instances of motors and other devices here
 
+//&& NUMERAL CONSTANTS 
+
+
 //&& BRAIN CONSTANT ---------------------------------------------
 brain Brain;
 
@@ -71,9 +74,10 @@ motor intakeMotor = motor(PORT12, ratio18_1, false);
 /*---------------------------------------------------------------------------*/
 void pre_auton(void) {
   //RESETS THE GYROSCOPE FOR THE SMART DRIVETRAIN
+  Inertial.calibrate();
   Inertial.resetHeading();
   Inertial.resetRotation();
-  Inertial.calibrate();
+  
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
@@ -97,12 +101,16 @@ void autonomous(void) {
 
 void configureDriveBindings(){
   if (DRIVER.ButtonL1.pressing()) { //conveyor belt
-    conveyorMotor.spin(forward, 50, percent);
-  } else {
+    conveyorMotor.spin(reverse, 100, percent);
+  } 
+  else if (DRIVER.ButtonL2.pressing()) {
+    conveyorMotor.spin(forward, 100, percent);
+  }
+  else {
     conveyorMotor.stop();
   }
 
-  if (DRIVER.ButtonL2.pressing()) { //piston
+  if (DRIVER.ButtonR1.pressing()) { //piston
     moboClampPiston.set(true);
   } else {
     moboClampPiston.set(false);
@@ -116,8 +124,6 @@ void usercontrol(void) {
     // This is the main execution loop for the user control program.
     // Each time through the loop your program should update motor + servo
     // values based on feedback from the joysticks.
-
-   
 
     // ........................................................................
     // Insert user code here. This is where you use the joystick values to
