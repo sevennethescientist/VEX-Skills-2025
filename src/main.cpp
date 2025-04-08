@@ -28,6 +28,7 @@ brain Brain;
 
 // && SENSOR CONSTANTS -----------------------------------------
 //TODO to be configured
+//https://api.vex.com/v5/home/cpp/Inertial.html
 inertial Inertial = inertial(PORT20);
 
 // && SMART PORT CONSTANTS
@@ -80,8 +81,13 @@ void pre_auton(void) {
   Inertial.calibrate();
   Inertial.resetHeading();
   Inertial.resetRotation();
-  
 
+  while (Inertial.isCalibrating()) {
+    Brain.Screen.clearScreen();
+    Brain.Screen.print("Inertial Calibrating");
+    wait(0.5, seconds);
+  }
+  
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
 
@@ -107,10 +113,10 @@ void configureDriveBindings(){
 
   // * CONVEYOR CONTROL
   if (DRIVER.ButtonL1.pressing()) { //conveyor belt
-    conveyorMotor.spin(reverse, 100, percent);
+    conveyorMotor.spin(reverse, CONVEYOR_MAX_SPEED, percent);
   } 
   else if (DRIVER.ButtonL2.pressing()) {
-    conveyorMotor.spin(forward, 100, percent);
+    conveyorMotor.spin(forward, CONVEYOR_MAX_SPEED, percent);
   }
   else {
     conveyorMotor.stop();
@@ -124,6 +130,18 @@ void configureDriveBindings(){
     leftMoboClampPiston.set(false);
     rightMoboClampPiston.set(false);
   }
+
+    //Sets sepeeds to inputs from driver contrller 
+    int leftSpeed = DRIVER.Axis3.position();
+    int rightSpeed = DRIVER.Axis2.position();
+
+    // TODO Deadband Implementation?
+    frontLeftDriveMotor.spin(forward, leftSpeed, percent);
+    frontRightDriveMotor.spin(forward, leftSpeed, percent);
+
+    backLeftDriveMotor.spin(forward, leftSpeed, percent);
+    backRightDriveMotor.spin(forward, rightSpeed, percent);
+
 
 }
 
@@ -140,18 +158,7 @@ void usercontrol(void) {
     // ........................................................................
 
     configureDriveBindings();
-    //Sets sepeeds to inputs from driver contrller 
-    int leftSpeed = DRIVER.Axis3.position();
-    int rightSpeed = DRIVER.Axis2.position();
 
-    // TODO Deadband Implementation
-    // ^ SET MOTORSPEEDS 
-    //TODO SEE IF NEEDS CHANGE
-    // frontLeftDriveMotor.spin(forward, leftSpeed, percent);
-    // frontRightDriveMotor.spin(forward, leftSpeed, percent);
-
-    // backLeftDriveMotor.spin(forward, leftSpeed, percent);
-    // backRightDriveMotor.spin(forward, rightSpeed, percent);
 
     
 
