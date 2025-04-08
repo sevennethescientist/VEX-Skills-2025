@@ -18,11 +18,15 @@ competition Competition;
 
 // define your global instances of motors and other devices here
 
+//&& NUMERAL CONSTANTS 
+
+
 //&& BRAIN CONSTANT ---------------------------------------------
 brain Brain;
 
 // && SENSOR CONSTANTS -----------------------------------------
 //TODO to be configured
+inertial Inertial = inertial(PORT20);
 
 // && SMART PORT CONSTANTS
 //TODO CONFIGURE
@@ -40,17 +44,24 @@ int threshold;
 //&& DRIVE MOTOR CONSTANTS ---------------------------------------------
 // ** Parameters: port, ratio, reversed boolean
 //TODO update ports, update which side should be inversed
-motor frontLeftDriveMotor = motor(PORT1, ratio18_1, false);
-motor frontRightDriveMotor = motor(PORT1, ratio18_1, true);
-motor backLeftDriveMotor = motor(PORT1, ratio18_1, false);
-motor backRightDriveMotor = motor(PORT1, ratio18_1, true);
+motor frontLeftDriveMotor = motor(PORT3, ratio18_1, false);
+motor frontRightDriveMotor = motor(PORT4, ratio18_1, true);
+motor backLeftDriveMotor = motor(PORT5, ratio18_1, false);
+motor backRightDriveMotor = motor(PORT6, ratio18_1, true);
+
+motor_group leftMotorGroup = motor_group(frontLeftDriveMotor, backRightDriveMotor);
+motor_group rightMotorGroup = motor_group(frontLeftDriveMotor, backRightDriveMotor);
+
+//TODO VERIFY THESE VALUES
+smartdrive DriveTrain = smartdrive(leftMotorGroup, rightMotorGroup,
+                                  Inertial, 0, 0, 0, mm, 1);
+// view: https://api.vex.com/v5/home/cpp/SmartDrive.html#smartdrive
+
+//&& DRIVE ENCODER CONSTANTS
 
 // && SCORING MOTOR CONSTANTS 
-motor conveyorMotor = motor(PORT1, ratio18_1, false);
-motor intakeMotor = motor(PORT1, ratio18_1, false);
-
-
-//babababba
+motor conveyorMotor = motor(PORT11, ratio18_1, false);
+motor intakeMotor = motor(PORT12, ratio18_1, false);
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -61,8 +72,12 @@ motor intakeMotor = motor(PORT1, ratio18_1, false);
 /*  function is only called once after the V5 has been powered on and        */
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
-
 void pre_auton(void) {
+  //RESETS THE GYROSCOPE FOR THE SMART DRIVETRAIN
+  Inertial.calibrate();
+  Inertial.resetHeading();
+  Inertial.resetRotation();
+  
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
@@ -71,31 +86,37 @@ void pre_auton(void) {
   moboClampPiston.set(false);
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              Autonomous Task                              */
-/*                                                                           */
-/*  This task is used to control your robot during the autonomous phase of   */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
+
 
 void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
+  //TO BE TESTED
+  DriveTrain.driveFor(forward, 6, inches);
+  //TODO VERIFY
+  //DriveTrain.turnToHeading();
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              User Control Task                            */
-/*                                                                           */
-/*  This task is used to control your robot during the user control phase of */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
+
+void configureDriveBindings(){
+  if (DRIVER.ButtonL1.pressing()) { //conveyor belt
+    conveyorMotor.spin(reverse, 100, percent);
+  } 
+  else if (DRIVER.ButtonL2.pressing()) {
+    conveyorMotor.spin(forward, 100, percent);
+  }
+  else {
+    conveyorMotor.stop();
+  }
+
+  if (DRIVER.ButtonR1.pressing()) { //piston
+    moboClampPiston.set(true);
+  } else {
+    moboClampPiston.set(false);
+  }
+
+}
 
 void usercontrol(void) {
   // User control code here, inside the loop
@@ -104,14 +125,12 @@ void usercontrol(void) {
     // Each time through the loop your program should update motor + servo
     // values based on feedback from the joysticks.
 
-   
-
     // ........................................................................
     // Insert user code here. This is where you use the joystick values to
     // update your motors, etc.
     // ........................................................................
 
-     // ** DRIVER BINDINGS -------------------------------------------------------------------
+    configureDriveBindings();
     //Sets sepeeds to inputs from driver contrller 
     int leftSpeed = DRIVER.Axis3.position();
     int rightSpeed = DRIVER.Axis2.position();
@@ -119,30 +138,22 @@ void usercontrol(void) {
     // TODO Deadband Implementation
     // ^ SET MOTORSPEEDS 
     //TODO SEE IF NEEDS CHANGE
-    frontLeftDriveMotor.spin(forward, leftSpeed, percent);
-    frontRightDriveMotor.spin(forward, leftSpeed, percent);
+    // frontLeftDriveMotor.spin(forward, leftSpeed, percent);
+    // frontRightDriveMotor.spin(forward, leftSpeed, percent);
 
-    backLeftDriveMotor.spin(forward, leftSpeed, percent);
-    backRightDriveMotor.spin(forward, rightSpeed, percent);
+    // backLeftDriveMotor.spin(forward, leftSpeed, percent);
+    // backRightDriveMotor.spin(forward, rightSpeed, percent);
 
-    // ** OPERATOR BINDINGS --------------------------------------------------------------
-    if (OPERATOR.ButtonL1.pressing()) { //conveyor belt
-      conveyorMotor.spin(forward, 50, percent);
-    } else {
-      conveyorMotor.stop();
-    }
-
-    if (OPERATOR.ButtonL2.pressing()) { //piston
-      moboClampPiston.set(true);
-    } else {
-      moboClampPiston.set(true);
-    }
+    
 
 
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
 }
+
+//todo for now put everything in here
+
 
 //
 // Main will set up the competition functions and callbacks.
