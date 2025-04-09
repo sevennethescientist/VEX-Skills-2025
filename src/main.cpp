@@ -22,13 +22,16 @@ competition Competition;
 int CONVEYOR_MAX_SPEED = 100;
 int CONVEYOR_MIN_SPEED = 0;
 
+double DRIVESPEED_MULTIPLIER = 80;
+double TURNSPEED_MULTIPLIER = 80;
+
 //&& BRAIN CONSTANT ---------------------------------------------
 brain Brain;
 
 // && SENSOR CONSTANTS -----------------------------------------
 //TODO to be configured
 //https://api.vex.com/v5/home/cpp/Inertial.html
-inertial Inertial = inertial(PORT20);
+inertial Inertial = inertial(PORT11);
 
 // && SMART PORT CONSTANTS
 //TODO CONFIGURE
@@ -57,7 +60,7 @@ motor_group rightMotorGroup = motor_group(frontLeftDriveMotor, backRightDriveMot
 
 //TODO VERIFY THESE VALUES
 smartdrive DriveTrain = smartdrive(leftMotorGroup, rightMotorGroup, Inertial,
-                                     (4 * 3.14), 0, 0, inches, 1);
+                                     (4 * 3.14), 12.5, 10.5, inches);
 // view: https://api.vex.com/v5/home/cpp/SmartDrive.html#smartdrive
 
 //&& DRIVE ENCODER CONSTANTS
@@ -123,11 +126,11 @@ void configureDriveBindings(){
 
   // * CLAMP CONTROL
   if (DRIVER.ButtonR1.pressing()) { //piston
-    leftMoboClampPiston.set(true);
-    rightMoboClampPiston.set(true);
-  } else {
     leftMoboClampPiston.set(false);
     rightMoboClampPiston.set(false);
+  } else {
+    leftMoboClampPiston.set(true);
+    rightMoboClampPiston.set(true);
   }
 
     //Sets sepeeds to inputs from driver contrller 
@@ -135,11 +138,11 @@ void configureDriveBindings(){
     int rightSpeed = DRIVER.Axis2.position();
 
     // TODO Deadband Implementation?
-    frontLeftDriveMotor.spin(forward, leftSpeed, percent);
-    frontRightDriveMotor.spin(forward, leftSpeed, percent);
+    frontLeftDriveMotor.spin(forward, DRIVESPEED_MULTIPLIER * DRIVER.Axis3.position() + TURNSPEED_MULTIPLIER * DRIVER.Axis4.position() , percent);
+    frontRightDriveMotor.spin(forward, DRIVESPEED_MULTIPLIER * DRIVER.Axis3.position() -  TURNSPEED_MULTIPLIER * DRIVER.Axis4.position() , percent);
 
-    backLeftDriveMotor.spin(forward, leftSpeed, percent);
-    backRightDriveMotor.spin(forward, rightSpeed, percent);
+    backLeftDriveMotor.spin(forward, DRIVESPEED_MULTIPLIER * DRIVER.Axis3.position() + TURNSPEED_MULTIPLIER * DRIVER.Axis4.position(), percent);
+    backRightDriveMotor.spin(forward, DRIVESPEED_MULTIPLIER * DRIVER.Axis3.position() - TURNSPEED_MULTIPLIER * DRIVER.Axis4.position(), percent);
 
 
 }
